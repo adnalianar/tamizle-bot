@@ -3,18 +3,11 @@
   "version": "1.0.0",
   "main": "bot.js",
   "scripts": {
-    "start": "node bot.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node bot.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
-    "telegraf": "^4.16.3"
-  }
-  "dependencies": {
-  "telegraf": "^4.16.3",
-  "express": "^4.19.2"
-}
+    "telegraf": "^4.16.3",
+    "express": "^4.19.2"
+  },
+  "license": "ISC"
 }
