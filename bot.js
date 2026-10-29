@@ -1,21 +1,12 @@
 const { Telegraf, Markup } = require('telegraf');
-const express = require('express');
-const app = express();
-const PORT = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-  res.send('Bot is running!');
-});
-
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
 // Bot tokeni
-const TOKEN = '8742739069:AAFUmNYXtAS2cDhB_sGy-rMgaoq-F7VNgOE';
+const TOKEN = '8849538524:AAGmdJ0QvyXH2c0pK7ixmKheM9ITXIQSGJA';
 const bot = new Telegraf(TOKEN);
 
 // Sənin Telegram ID-n koda əlavə olundu
-const ADMIN_ID = 8896331803; 
+const ADMIN_ID = 1580270121; 
+
 
 bot.start((ctx) => {
   ctx.reply('Salam! Tamİzlə platformasının ödəniş təsdiq botuna xoş gəlmisiniz. Zəhmət olmasa ödəniş çəkini (şəklini) buraya göndərin.');
