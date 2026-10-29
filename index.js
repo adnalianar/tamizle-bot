@@ -1,12 +1,20 @@
 const { Telegraf, Markup } = require('telegraf');
+const http = require('http');
 
-// Bot tokeni
+// Render üçün sadə server (port xətasını aradan qaldırır və botun 7/24 işləməsini təmin edir)
+const PORT = process.env.PORT || 3000;
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Bot is running!\n');
+}).listen(PORT, () => {
+  console.log(`Server is listening on port ${PORT}`);
+});
+
+// Bot tokeni və Sənin Telegram ID-n koda birbaşa əlavə olundu
 const TOKEN = '8849538524:AAGmdJ0QvyXH2c0pK7ixmKheM9ITXIQSGJA';
 const bot = new Telegraf(TOKEN);
 
-// Sənin Telegram ID-n koda əlavə olundu
 const ADMIN_ID = 1580270121; 
-
 
 bot.start((ctx) => {
   ctx.reply('Salam! Tamİzlə platformasının ödəniş təsdiq botuna xoş gəlmisiniz. Zəhmət olmasa ödəniş çəkini (şəklini) buraya göndərin.');
@@ -16,7 +24,9 @@ bot.start((ctx) => {
 bot.on('photo', async (ctx) => {
   const userId = ctx.from.id;
   const username = ctx.from.username ? `@${ctx.from.username}` : 'Yoxdur';
-  const photoId = ctx.photo[ctx.photo.length - 1].file_id;
+  const photo = ctx.photo[ctx.photo.length - 1];
+  if (!photo) return;
+  const photoId = photo.file_id;
 
   try {
     // Çeki yalnız adminə (sənə) göndəririk
@@ -33,7 +43,7 @@ bot.on('photo', async (ctx) => {
 
     ctx.reply('✅ Çekiniz qəbul olundu! Admin tərəfindən yoxlanıldıqdan sonra abunəliyiniz aktivləşdiriləcək.');
   } catch (error) {
-    console.error(error);
+    console.error("Photo error:", error);
     ctx.reply('❌ Xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.');
   }
 });
@@ -45,9 +55,10 @@ bot.action(/approve_(.+)/, async (ctx) => {
   try {
     await ctx.telegram.sendMessage(targetUserId, '🎉 Təbriklər! Ödənişiniz təsdiqləndi. Artıq platformadan istifadə edə bilərsiniz.');
     await ctx.editMessageCaption('✅ Bu ödəniş TƏSDİQLƏNDİ.');
-    ctx.answerCbQuery('Uğurla təsdiqləndi!');
+    await ctx.answerCbQuery('Uğurla təsdiqləndi!');
   } catch (e) {
-    ctx.answerCbQuery('Xəta baş verdi!');
+    console.error("Approve error:", e);
+    await ctx.answerCbQuery('Xəta baş verdi!');
   }
 });
 
@@ -58,9 +69,10 @@ bot.action(/reject_(.+)/, async (ctx) => {
   try {
     await ctx.telegram.sendMessage(targetUserId, '❌ Təəssüf ki, ödənişiniz təsdiqlənmədi. Məlumatları yoxlayıb yenidən cəhd edin.');
     await ctx.editMessageCaption('❌ Bu ödəniş RƏDD EDİLDİ.');
-    ctx.answerCbQuery('Ödəniş rədd edildi.');
+    await ctx.answerCbQuery('Ödəniş rədd edildi.');
   } catch (e) {
-    ctx.answerCbQuery('Xəta baş verdi!');
+    console.error("Reject error:", e);
+    await ctx.answerCbQuery('Xəta baş verdi!');
   }
 });
 
