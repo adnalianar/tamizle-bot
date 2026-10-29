@@ -1,7 +1,7 @@
+
 const { Telegraf, Markup } = require('telegraf');
 const http = require('http');
 
-// Render üçün port serveri (7/24 işlək saxlayır)
 const PORT = process.env.PORT || 3000;
 http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -12,8 +12,6 @@ http.createServer((req, res) => {
 
 const TOKEN = '8849538524:AAGmdJ0QvyXH2c0pK7ixmKheM9ITXIQSGJA';
 const bot = new Telegraf(TOKEN);
-
-// Sənin Telegram ID-n (bütün təsdiq/inkar paneli yalnız sənə gələcək)
 const ADMIN_ID = 1580270121; 
 
 bot.start((ctx) => {
@@ -24,18 +22,27 @@ bot.start((ctx) => {
   }
 });
 
-// İstifadəçi (məsələn, ana səhifədən və ya başqa telefondan) şəkil/çek göndərəndə
-bot.on('photo', async (ctx) => {
+// İstifadəçi şəkil VƏ YA sənəd (fayl) şəklində çek göndərəndə
+bot.on(['photo', 'document'], async (ctx) => {
   try {
     const userId = ctx.from.id;
     const username = ctx.from.username ? `@${ctx.from.username}` : 'Yoxdur';
     const fullName = ctx.from.first_name + (ctx.from.last_name ? " " + ctx.from.last_name : "");
-    const photo = ctx.photo[ctx.photo.length - 1];
-    if (!photo) return;
-    const photoId = photo.file_id;
+    
+    let fileId = null;
+    if (ctx.message.photo && ctx.message.photo.length > 0) {
+      fileId = ctx.message.photo[ctx.message.photo.length - 1].file_id;
+    } else if (ctx.message.document) {
+      fileId = ctx.message.document.file_id;
+    }
 
-    // Şəkli və təsdiq düymələrini birbaşa SƏNİN ID-nə göndəririk
-    await bot.telegram.sendPhoto(ADMIN_ID, photoId, {
+    if (!fileId) {
+      await ctx.reply('⚠️ Zəhmət olmasa şəkli düzgün formatda göndərin.');
+      return;
+    }
+
+    // Şəkli birbaşa sənə (adminə) göndəririk
+    await bot.telegram.sendPhoto(ADMIN_ID, fileId, {
       caption: `📦 **Yeni ödəniş çeki gəldi!**\n\n👤 Adı: ${fullName}\n🆔 İstifadəçi ID: \`${userId}\`\n🔗 İstifadəçi adı: ${username}`,
       parse_mode: 'Markdown',
       ...Markup.inlineKeyboard([
@@ -46,24 +53,20 @@ bot.on('photo', async (ctx) => {
       ])
     });
 
-    await ctx.reply('✅ Çekiniz qəbul olundu! Admin (müəllim) tərəfindən yoxlanıldıqdan sonra abunəliyiniz aktivləşdiriləcək.');
+    await ctx.reply('✅ Çekiniz qəbul olundu! Admin tərəfindən yoxlanıldıqdan sonra abunəliyiniz aktivləşdiriləcək.');
   } catch (error) {
-    console.error("Photo error:", error);
+    console.error("Photo/Document error:", error);
     try {
       await ctx.reply('❌ Xəta baş verdi. Zəhmət olmasa əvvəlcə bota /start düyməsini vurduğunuzdan əmin olun.');
     } catch (err) {}
   }
 });
 
-// Sən (Admin) "Təsdiq Et" düyməsinə basanda
+// Admin "Təsdiq Et" düyməsinə basanda
 bot.action(/approve_(.+)/, async (ctx) => {
   try {
     const targetUserId = ctx.match[1];
-    
-    // İstifadəçiyə uğurlu bildiriş göndəririk
     await bot.telegram.sendMessage(targetUserId, '🎉 Təbriklər! Ödənişiniz təsdiqləndi. Artıq platformadan istifadə edə bilərsiniz.');
-    
-    // Admin panelindəki şəklin altındakı yazını dəyişirik ki, təsdiqləndiyi görünsün
     await ctx.editMessageCaption('✅ Bu ödəniş TƏSDİQLƏNDİ və istifadəçiyə VIP icazəsi verildi.');
     await ctx.answerCbQuery('Uğurla təsdiqləndi!');
   } catch (e) {
@@ -72,15 +75,11 @@ bot.action(/approve_(.+)/, async (ctx) => {
   }
 });
 
-// Sən (Admin) "Rədd Et" düyməsinə basanda
+// Admin "Rədd Et" düyməsinə basanda
 bot.action(/reject_(.+)/, async (ctx) => {
   try {
     const targetUserId = ctx.match[1];
-    
-    // İstifadəçiyə rədd cavabı göndəririk
     await bot.telegram.sendMessage(targetUserId, '❌ Təəssüf ki, ödənişiniz təsdiqlənmədi. Məlumatları yoxlayıb yenidən cəhd edin.');
-    
-    // Admin panelindəki şəkli yeniləyirik
     await ctx.editMessageCaption('❌ Bu ödəniş RƏDD EDİLDİ.');
     await ctx.answerCbQuery('Ödəniş rədd edildi.');
   } catch (e) {
