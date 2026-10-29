@@ -1,7 +1,8 @@
+
 const { Telegraf, Markup } = require('telegraf');
 const http = require('http');
 
-// Render üçün sadə server (port xətasını aradan qaldırır və botun 7/24 işləməsini təmin edir)
+// Render üçün server (port xətasını aradan qaldırır)
 const PORT = process.env.PORT || 3000;
 http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -10,10 +11,10 @@ http.createServer((req, res) => {
   console.log(`Server is listening on port ${PORT}`);
 });
 
-// Bot tokeni və Sənin Telegram ID-n koda birbaşa əlavə olundu
 const TOKEN = '8849538524:AAGmdJ0QvyXH2c0pK7ixmKheM9ITXIQSGJA';
 const bot = new Telegraf(TOKEN);
 
+// Sənin Telegram ID-n
 const ADMIN_ID = 1580270121; 
 
 bot.start((ctx) => {
@@ -43,8 +44,8 @@ bot.on('photo', async (ctx) => {
 
     ctx.reply('✅ Çekiniz qəbul olundu! Admin tərəfindən yoxlanıldıqdan sonra abunəliyiniz aktivləşdiriləcək.');
   } catch (error) {
-    console.error("Photo error:", error);
-    ctx.reply('❌ Xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.');
+    console.error("Photo send error:", error);
+    ctx.reply('❌ Çek göndərilərkən xəta baş verdi. Zəhmət olmasa əvvəlcə bota /start düyməsini vurduğunuzdan əmin olun.');
   }
 });
 
@@ -53,12 +54,12 @@ bot.action(/approve_(.+)/, async (ctx) => {
   const targetUserId = ctx.match[1];
   
   try {
-    await ctx.telegram.sendMessage(targetUserId, '🎉 Təbriklər! Ödənişiniz təsdiqləndi. Artıq platformadan istifadə edə bilərsiniz.');
+    await bot.telegram.sendMessage(targetUserId, '🎉 Təbriklər! Ödənişiniz təsdiqləndi. Artıq platformadan istifadə edə bilərsiniz.');
     await ctx.editMessageCaption('✅ Bu ödəniş TƏSDİQLƏNDİ.');
     await ctx.answerCbQuery('Uğurla təsdiqləndi!');
   } catch (e) {
     console.error("Approve error:", e);
-    await ctx.answerCbQuery('Xəta baş verdi!');
+    await ctx.answerCbQuery('Xəta baş verdi! İstifadəçi bota start verməyib.');
   }
 });
 
@@ -67,12 +68,12 @@ bot.action(/reject_(.+)/, async (ctx) => {
   const targetUserId = ctx.match[1];
   
   try {
-    await ctx.telegram.sendMessage(targetUserId, '❌ Təəssüf ki, ödənişiniz təsdiqlənmədi. Məlumatları yoxlayıb yenidən cəhd edin.');
+    await bot.telegram.sendMessage(targetUserId, '❌ Təəssüf ki, ödənişiniz təsdiqlənmədi. Məlumatları yoxlayıb yenidən cəhd edin.');
     await ctx.editMessageCaption('❌ Bu ödəniş RƏDD EDİLDİ.');
     await ctx.answerCbQuery('Ödəniş rədd edildi.');
   } catch (e) {
     console.error("Reject error:", e);
-    await ctx.answerCbQuery('Xəta baş verdi!');
+    await ctx.answerCbQuery('Xəta baş verdi! İstifadəçi bota start verməyib.');
   }
 });
 
