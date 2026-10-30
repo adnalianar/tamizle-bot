@@ -12,7 +12,7 @@ http.createServer((req, res) => {
 
 const TOKEN = '8849538524:AAGmdJ0QvyXH2c0pK7ixmKheM9ITXIQSGJA';
 const bot = new Telegraf(TOKEN);
-const ADMIN_ID = 1580270121; 
+const ADMIN_ID = 8896331803; 
 
 // Hər istifadəçi üçün aktiv və təsdiqlənmiş unikal açarları yadda saxlamaq üçün yaddaş (baza)
 global.activeVipKeys = global.activeVipKeys || new Map();
