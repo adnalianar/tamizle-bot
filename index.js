@@ -1,4 +1,3 @@
-
 const { Telegraf, Markup } = require('telegraf');
 const http = require('http');
 
@@ -66,9 +65,17 @@ bot.on(['photo', 'document'], async (ctx) => {
 bot.action(/approve_(.+)/, async (ctx) => {
   try {
     const targetUserId = ctx.match[1];
-    await bot.telegram.sendMessage(targetUserId, '🎉 Təbriklər! Ödənişiniz təsdiqləndi. Artıq platformadan istifadə edə bilərsiniz.');
-    await ctx.editMessageCaption('✅ Bu ödəniş TƏSDİQLƏNDİ və istifadəçiyə VIP icazəsi verildi.');
-    await ctx.answerCbQuery('Uğurla təsdiqləndi!');
+    
+    // İstifadəçiyə VIP aktivasiya kodunu göndəririk
+    await bot.telegram.sendMessage(targetUserId, 
+      `🎉 Təbriklər! Ödənişiniz təsdiqləndi.\n\n` +
+      `🔑 1 aylıq VIP açar kodunuz: <code>TAMIZLE-VIP-2026</code>\n\n` +
+      `Bu kodu saytdakı VIP pəncərəsinə daxil edərək abunəliyinizi aktivləşdirə bilərsiniz!`, 
+      { parse_mode: 'HTML' }
+    );
+
+    await ctx.editMessageCaption('✅ Bu ödəniş TƏSDİQLƏNDİ və istifadəçiyə VIP kodu göndərildi.');
+    await ctx.answerCbQuery('Uğurla təsdiqləndi və kod göndərildi!');
   } catch (e) {
     console.error("Approve error:", e);
     try { await ctx.answerCbQuery('Xəta baş verdi!'); } catch(err){}
