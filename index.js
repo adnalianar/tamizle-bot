@@ -1,5 +1,6 @@
 const { Telegraf, Markup } = require('telegraf');
 const http = require('http');
+const crypto = require('crypto'); // Unikal şifrə/hash yaratmaq üçün
 
 const PORT = process.env.PORT || 3000;
 http.createServer((req, res) => {
@@ -12,6 +13,9 @@ http.createServer((req, res) => {
 const TOKEN = '8849538524:AAGmdJ0QvyXH2c0pK7ixmKheM9ITXIQSGJA';
 const bot = new Telegraf(TOKEN);
 const ADMIN_ID = 1580270121; 
+
+// Hər istifadəçi üçün aktiv və təsdiqlənmiş unikal açarları yadda saxlamaq üçün yaddaş (baza)
+global.activeVipKeys = global.activeVipKeys || new Map();
 
 bot.start((ctx) => {
   try {
@@ -61,21 +65,28 @@ bot.on(['photo', 'document'], async (ctx) => {
   }
 });
 
-// Admin "Təsdiq Et" düyməsinə basanda
+// Admin "Təsdiq Et" düyməsinə basanda - Uzun, heşlənmiş və unikal açar yaradılır
 bot.action(/approve_(.+)/, async (ctx) => {
   try {
     const targetUserId = ctx.match[1];
     
-    // İstifadəçiyə VIP aktivasiya kodunu göndəririk
+    // Unikal, uzun və heşlənmiş açar yaradırıq (məsələn: TAMIZLE-VIP-9f8e7d... formatında)
+    const randomBytes = crypto.randomBytes(16).toString('hex');
+    const uniqueKey = `TAMIZLE-VIP-${crypto.createHash('sha256').update(targetUserId + randomBytes + Date.now()).digest('hex').substring(0, 24).toUpperCase()}`;
+    
+    // Açarı yaddaşda həmin istifadəçiyə bağlayırıq
+    global.activeVipKeys.set(uniqueKey, targetUserId);
+
+    // İstifadəçiyə yalnız ona özəl uzun açarı göndəririk
     await bot.telegram.sendMessage(targetUserId, 
       `🎉 Təbriklər! Ödənişiniz təsdiqləndi.\n\n` +
-      `🔑 1 aylıq VIP açar kodunuz: <code>TAMIZLE-VIP-2026</code>\n\n` +
-      `Bu kodu saytdakı VIP pəncərəsinə daxil edərək abunəliyinizi aktivləşdirə bilərsiniz!`, 
+      `🔑 Sizin unikal 1 aylıq VIP açarınız:\n<code>${uniqueKey}</code>\n\n` +
+      `Bu kodu saytdakı VIP pəncərəsinə daxil edərək abunəliyinizi aktivləşdirə bilərsiniz! (Bu açar yalnız sizə məxsusdur və bir dəfəlikdir).`, 
       { parse_mode: 'HTML' }
     );
 
-    await ctx.editMessageCaption('✅ Bu ödəniş TƏSDİQLƏNDİ və istifadəçiyə VIP kodu göndərildi.');
-    await ctx.answerCbQuery('Uğurla təsdiqləndi və kod göndərildi!');
+    await ctx.editMessageCaption('✅ Bu ödəniş TƏSDİQLƏNDİ və istifadəçiyə unikal açar kodu göndərildi.');
+    await ctx.answerCbQuery('Uğurla təsdiqləndi və unikal açar yaradıldı!');
   } catch (e) {
     console.error("Approve error:", e);
     try { await ctx.answerCbQuery('Xəta baş verdi!'); } catch(err){}
