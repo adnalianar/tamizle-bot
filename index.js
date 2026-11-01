@@ -19,7 +19,14 @@ global.activeVipKeys = global.activeVipKeys || new Map();
 
 bot.start((ctx) => {
   try {
-    ctx.reply('Salam! Tamİzlə platformasının ödəniş təsdiq botuna xoş gəlmisiniz. Zəhmət olmasa ödəniş çəkini (şəklini) buraya göndərin.');
+    ctx.reply(
+      `🎬 *Tamİzlə VIP Abunəliyinə Xoş Gəlmisiniz!*\n\n` +
+      `VIP status əldə etmək üçün ödənişi aşağıdakı karta edin:\n` +
+      `💳 *Kart nömrəsi:* \`4169 7300 0000 0000\`\n` + // <--- Bura öz kart nömrəni yazarsan
+      `📌 *Məbləğ:* 5 AZN\n\n` +
+      `Ödənişi etdikdən sonra *çeki (skrinşotu)* birbaşa bu söhbətə göndərin. Admin təsdiqlədikdən sonra unikal açar kodunuz avtomatik gələcək! ✅`,
+      { parse_mode: 'Markdown' }
+    );
   } catch (e) {
     console.error("Start error:", e);
   }
@@ -46,7 +53,7 @@ bot.on(['photo', 'document'], async (ctx) => {
 
     // Şəkli birbaşa sənə (adminə) göndəririk
     await bot.telegram.sendPhoto(ADMIN_ID, fileId, {
-      caption: `📦 **Yeni ödəniş çeki gəldi!**\n\n👤 Adı: ${fullName}\n🆔 İstifadəçi ID: \`${userId}\`\n🔗 İstifadəçi adı: ${username}`,
+      caption: `📦 *Yeni ödəniş çeki gəldi!*\n\n👤 Adı: ${fullName}\n🆔 İstifadəçi ID: \`${userId}\`\n🔗 İstifadəçi adı: ${username}`,
       parse_mode: 'Markdown',
       ...Markup.inlineKeyboard([
         [
@@ -70,7 +77,7 @@ bot.action(/approve_(.+)/, async (ctx) => {
   try {
     const targetUserId = ctx.match[1];
     
-    // Unikal, uzun və heşlənmiş açar yaradırıq (məsələn: TAMIZLE-VIP-9f8e7d... formatında)
+    // Unikal, uzun və heşlənmiş açar yaradırıq
     const randomBytes = crypto.randomBytes(16).toString('hex');
     const uniqueKey = `TAMIZLE-VIP-${crypto.createHash('sha256').update(targetUserId + randomBytes + Date.now()).digest('hex').substring(0, 24).toUpperCase()}`;
     
