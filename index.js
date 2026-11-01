@@ -22,7 +22,7 @@ bot.start((ctx) => {
     ctx.reply(
       `🎬 *Tamİzlə VIP Abunəliyinə Xoş Gəlmisiniz!*\n\n` +
       `VIP status əldə etmək üçün ödənişi aşağıdakı karta edin:\n` +
-      `💳 *Kart nömrəsi:* \`4169 7300 0000 0000\`\n` + // <--- Bura öz kart nömrəni yazarsan
+      `💳 *Kart nömrəsi:* \`4169738859347480\`\n` + // <--- Bura öz kart nömrəni yazarsan
       `📌 *Məbləğ:* 5 AZN\n\n` +
       `Ödənişi etdikdən sonra *çeki (skrinşotu)* birbaşa bu söhbətə göndərin. Admin təsdiqlədikdən sonra unikal açar kodunuz avtomatik gələcək! ✅`,
       { parse_mode: 'Markdown' }
